@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kiosk Spaarapp</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#6a4ab1" />
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background: #f4f0ff;
+      color: #2c2c2c;
+    }
+
+    .header {
+      background: #fff;
+      padding: 1rem;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .info {
+      background: #e6e0f8;
+      padding: 1rem;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .card {
+      background: #fff;
+      margin: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .card img {
+      width: 40px;
+      height: auto;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+
+    .title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .stamps {
+      margin-top: 1rem;
+      display: flex;
+      gap: 8px;
+    }
+
+    .stamp {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid #999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      color: #999;
+    }
+
+    .stamp.filled {
+      background: #6a4ab1;
+      color: white;
+      border: none;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-top: 8px;
+      background: gold;
+      color: #000;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: #4c2a92;
+      color: white;
+      text-align: center;
+      padding: 1rem 0;
+      font-size: 0.9rem;
+    }
+
+    .scan-btn, .reset-btn {
+      display: block;
+      margin: 0.5rem auto;
+      background: #6a4ab1;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 8px;
+    }
+
+    .reset-btn {
+      background: #d11a2a;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">KIOSK Spaarapp</div>
+  <div class="info">
+    Scan bij aankoop en spaar voor gratis producten!
+    <button class="scan-btn" onclick="addStamp('frisdranken')">Scan Frisdrank</button>
+    <button class="scan-btn" onclick="addStamp('warm')">Scan Warme Drank</button>
+    <button class="scan-btn" onclick="addStamp('croissant')">Scan Croissant</button>
+    <button class="reset-btn" onclick="resetStamps()">Reset Alles</button>
+  </div>
+
+  <div class="card">
+    <div class="title">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Coca-Cola_bottle_cap.jpg" alt="Frisdrank" />
+      Frisdranken
+    </div>
+    <div class="subtitle">Coca-Cola, Fuze Tea, Sprite, Fanta</div>
+    <div class="stamps" id="frisdranken-stamps"></div>
+    <div class="tag">Tijdelijk t/m 31 augustus</div>
+  </div>
+
+  <div class="card">
+    <div class="title">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e6/Espresso_cup_icon.png" alt="Koffie" />
+      Warme dranken
+    </div>
+    <div class="subtitle">Alle varianten</div>
+    <div class="stamps" id="warm-stamps"></div>
+  </div>
+
+  <div class="card">
+    <div class="title">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Croissant-icon.png" alt="Croissant" />
+      Croissants
+    </div>
+    <div class="subtitle">Alle varianten</div>
+    <div class="stamps" id="croissant-stamps"></div>
+  </div>
+
+  <div class="nav">KIOSK | JULIA’S | HUISKAMER</div>
+
+  <script>
+    const maxStamps = 5;
+    const categories = ["frisdranken", "warm", "croissant"];
+
+    function loadStamps(category) {
+      const container = document.getElementById(`${category}-stamps`);
+      container.innerHTML = "";
+      const count = parseInt(localStorage.getItem(`${category}-stamps`) || "0");
+      for (let i = 0; i < maxStamps; i++) {
+        const stamp = document.createElement("div");
+        stamp.classList.add("stamp");
+        if (i < count) {
+          stamp.classList.add("filled");
+        }
+        stamp.textContent = "KIOSK";
+        container.appendChild(stamp);
+      }
+    }
+
+    function addStamp(category) {
+      let count = parseInt(localStorage.getItem(`${category}-stamps`) || "0");
+      if (count < maxStamps) {
+        count += 1;
+        localStorage.setItem(`${category}-stamps`, count);
+        loadStamps(category);
+      } else {
+        alert("Spaarkaart voor " + category + " is vol! Gratis product verdiend!");
+      }
+    }
+
+    function resetStamps() {
+      categories.forEach(cat => localStorage.removeItem(`${cat}-stamps`));
+      categories.forEach(loadStamps);
+      alert("Alle spaarkaarten zijn gereset.");
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(() => {
+        console.log("Service Worker geregistreerd");
+      });
+    }
+
+    categories.forEach(loadStamps);
+  </script>
+</body>
+</html>
